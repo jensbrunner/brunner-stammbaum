@@ -15,8 +15,8 @@ $buildAnswer = [System.Windows.Forms.MessageBox]::Show(
 $runBuild = $buildAnswer -eq [System.Windows.Forms.DialogResult]::Yes
 
 $rootDir = $PSScriptRoot
-$repoDir = Join-Path $rootDir 'topola-viewer'
-Set-Location $repoDir
+$npmDir = Join-Path $rootDir 'topola-viewer'
+
 
 $sevenZip = 'C:\Program Files\7-Zip\7z.exe'
 $gedPath = Join-Path $rootDir 'brunner.ged'
@@ -32,6 +32,8 @@ if (-not (Test-Path $sevenZip)) { throw '7-Zip not found at C:\Program Files\7-Z
 Remove-Item $zipPath, $encPath -ErrorAction SilentlyContinue
 
 & $sevenZip a -tzip $zipPath $gedPath $mediaPath
+
+Set-Location $npmDir
 
 npm.cmd run encrypt-tree -- $zipPath $encPath
 
