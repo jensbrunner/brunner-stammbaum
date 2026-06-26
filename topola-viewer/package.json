@@ -88,8 +88,8 @@
     "vite-tsconfig-paths": "^5.1.4"
   },
   "scripts": {
-    "start": "vite",
-    "build": "tsc && vite build",
+    "start": "set VITE_ENCRYPTED_ARCHIVE_URL=https://raw.githubusercontent.com/jensbrunner/brunner-stammbaum/main/brunner.zip.enc&& set VITE_GOOGLE_ANALYTICS=false&& vite",
+    "build": "set VITE_ENCRYPTED_ARCHIVE_URL=https://raw.githubusercontent.com/jensbrunner/brunner-stammbaum/main/brunner.zip.enc&& set VITE_GOOGLE_ANALYTICS=false&& tsc && vite build",
     "test": "jest",
     "prettier": "prettier --write \"{src,tests}/**/*.{ts,tsx,json}\"",
     "lint": "eslint src tests --ext .ts,.tsx",
@@ -114,3 +114,4 @@
     "not op_mini all"
   ]
 }
+
