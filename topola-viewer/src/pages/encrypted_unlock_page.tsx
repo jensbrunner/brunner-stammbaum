@@ -72,10 +72,10 @@ export function EncryptedUnlockPage(props: Props) {
     <main id="unlockContent" className={loading ? 'isUnlocking' : undefined}>
       <Segment id="unlockPanel">
         <div className="unlockCoatOfArms">
-          <img src="/coa.png" alt="Brunner Wappen" />
+          <img src={`${import.meta.env.BASE_URL}coa.png`} alt="Brunner Wappen" />
         </div>
 
-        <h1>Brunner Stammbaum</h1>
+        <h1>Stammbaum der Familie Brunner</h1>
 
         <Form onSubmit={unlock} error={!!error}>
           <Form.Field className="unlockPasswordField">
@@ -116,7 +116,7 @@ export function EncryptedUnlockPage(props: Props) {
             loading={loading}
             disabled={!password || loading}
           >
-            <span>Öffnen</span>
+            <span>{'\u00d6ffnen'}</span>
             <Icon name="arrow right" />
           </Button>
         </Form>

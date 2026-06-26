@@ -15,7 +15,7 @@ export function IntroPage() {
   const location = useLocation();
 
   const args = useMemo(() => getArguments(location), [location]);
-  const standalone = args.standalone;
+  const standalone = true;
 
   return (
     <>

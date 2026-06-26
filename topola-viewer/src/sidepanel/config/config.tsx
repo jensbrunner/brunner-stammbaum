@@ -33,7 +33,7 @@ export interface Config {
 
 export const DEFALUT_CONFIG: Config = {
   color: ChartColors.COLOR_BY_GENERATION,
-  id: Ids.SHOW,
+  id: Ids.HIDE,
   sex: Sex.SHOW,
   place: PlaceDisplay.FULL,
   placeCount: DEFAULT_PLACE_DISPLAY_COUNT,

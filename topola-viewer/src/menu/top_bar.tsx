@@ -1,6 +1,6 @@
 import queryString from 'query-string';
 import {FormattedMessage} from 'react-intl';
-import {Link, useLocation, useNavigate} from 'react-router';
+import {useLocation, useNavigate} from 'react-router';
 import {Dropdown, Icon, Menu} from 'semantic-ui-react';
 import {IndiInfo, JsonGedcomData} from 'topola';
 import {isGoogleDriveConfigured} from '../datasource/google_drive_service';
@@ -8,7 +8,6 @@ import {Media} from '../util/media';
 import {GoogleDriveMenu} from './google_drive_menu';
 import {MenuItem, MenuType} from './menu_item';
 import {SearchBar} from './search';
-import {UploadMenu} from './upload_menu';
 import {UrlMenu} from './url_menu';
 import {WikiTreeLoginMenu, WikiTreeMenu} from './wikitree_menu';
 
@@ -204,14 +203,6 @@ export function TopBar(props: Props) {
     }
   }
 
-  function title() {
-    return (
-      <Menu.Item>
-        <b>Topola Genealogy</b>
-      </Menu.Item>
-    );
-  }
-
   function googleDriveDisconnectMenu(screenSize: ScreenSize) {
     if (!props.hasGoogleToken || !isGoogleDriveConfigured()) {
       return null;
@@ -233,71 +224,6 @@ export function TopBar(props: Props) {
         {screenSize === ScreenSize.SMALL ? <Dropdown.Divider /> : null}
       </>
     );
-  }
-
-  function fileMenuItems(menuType: MenuType) {
-    return (
-      <>
-        <UploadMenu menuType={menuType} {...props} />
-        <UrlMenu menuType={menuType} {...props} />
-        <WikiTreeMenu menuType={menuType} {...props} />
-        <GoogleDriveMenu
-          menuType={menuType}
-          onTokenAcquired={props.onGoogleTokenAcquired}
-        />
-      </>
-    );
-  }
-
-  function fileMenus(screenSize: ScreenSize) {
-    // In standalone WikiTree mode, show only the "Select WikiTree ID" menu.
-    if (!props.standalone && props.showWikiTreeMenus) {
-      switch (screenSize) {
-        case ScreenSize.LARGE:
-          return <WikiTreeMenu menuType={MenuType.Menu} {...props} />;
-        case ScreenSize.SMALL:
-          return (
-            <>
-              <WikiTreeMenu menuType={MenuType.Dropdown} {...props} />
-              <Dropdown.Divider />
-            </>
-          );
-      }
-    }
-
-    // Don't show "open" menus in non-standalone mode.
-    if (!props.standalone) {
-      return null;
-    }
-
-    switch (screenSize) {
-      case ScreenSize.LARGE:
-        // Show dropdown if chart is shown, otherwise show individual menu
-        // items.
-        return props.showingChart ? (
-          <Dropdown
-            trigger={
-              <div>
-                <Icon name="folder open" />
-                <FormattedMessage id="menu.open" defaultMessage="Open" />
-              </div>
-            }
-            className="item"
-          >
-            <Dropdown.Menu>{fileMenuItems(MenuType.Dropdown)}</Dropdown.Menu>
-          </Dropdown>
-        ) : (
-          fileMenuItems(MenuType.Menu)
-        );
-
-      case ScreenSize.SMALL:
-        return (
-          <>
-            {fileMenuItems(MenuType.Dropdown)}
-            <Dropdown.Divider />
-          </>
-        );
-    }
   }
 
   function wikiTreeLoginMenu(screenSize: ScreenSize) {
@@ -330,26 +256,11 @@ export function TopBar(props: Props) {
           icon={null}
         >
           <Dropdown.Menu>
-            {fileMenus(ScreenSize.SMALL)}
             {chartMenus(ScreenSize.SMALL)}
             {googleDriveDisconnectMenu(ScreenSize.SMALL)}
             {wikiTreeLoginMenu(ScreenSize.SMALL)}
-
-            <Dropdown.Item
-              href="https://github.com/PeWu/topola-viewer"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <FormattedMessage
-                id="menu.github"
-                defaultMessage="GitHub project"
-              />
-            </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
-        <div className="topbar--title">
-          {props.standalone ? <Link to="/">{title()}</Link> : title()}
-        </div>
         {props.showingChart && props.data && (
           <SearchBar
             data={props.data}
@@ -364,22 +275,10 @@ export function TopBar(props: Props) {
   function desktopMenus() {
     return (
       <>
-        {props.standalone ? <Link to="/">{title()}</Link> : null}
-        {fileMenus(ScreenSize.LARGE)}
         {chartMenus(ScreenSize.LARGE)}
         <Menu.Menu position="right">
           {googleDriveDisconnectMenu(ScreenSize.LARGE)}
           {wikiTreeLoginMenu(ScreenSize.LARGE)}
-          <Menu.Item
-            href="https://github.com/PeWu/topola-viewer"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <FormattedMessage
-              id="menu.github"
-              defaultMessage="GitHub project"
-            />
-          </Menu.Item>
         </Menu.Menu>
       </>
     );
@@ -391,8 +290,6 @@ export function TopBar(props: Props) {
         as={Media}
         greaterThanOrEqual="large"
         attached="top"
-        inverted
-        color="blue"
         size="large"
       >
         {desktopMenus()}
@@ -401,8 +298,6 @@ export function TopBar(props: Props) {
         as={Media}
         at="small"
         attached="top"
-        inverted
-        color="blue"
         size="large"
       >
         {mobileMenus()}
