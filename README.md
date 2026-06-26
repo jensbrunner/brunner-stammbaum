@@ -1,5 +1,5 @@
 # The Brunner family
-The historical lineage and genealogical records of the Brunner family of Bern, a prominent patrician family (Patriziergeschlecht) holding burgher rights since the 15th century. Tracing the family tree back to its earliest recorded ancestor, Niklaus "Clewi" Brunner (first documented in Bern's Great Council in 1446), this repository maps the family's development across its primary guild branches (Schuhmachern and Zimmerleuten) and highlights all known descendants in Swiss politics, academia, and science. Includes pictures and descriptions.
+The historical lineage and genealogical records of the Brunner family of Bern, a prominent patrician family (Patriziergeschlecht) holding burgher rights since the 15th century. Tracing the family tree back to its earliest recorded ancestor, Niklaus "Clewi" Brunner (first documented in Bern's Great Council in 1446), this repository maps the family's development across its primary guild branches (Schuhmachern and Zimmerleuten) and highlights all known descendants. Includes pictures and description where known.
 
 # Viewing the family tree
 
