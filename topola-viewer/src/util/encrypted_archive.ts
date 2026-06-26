@@ -62,7 +62,7 @@ async function deriveAesKey(
   return crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
-      salt,
+      salt: salt.buffer.slice(salt.byteOffset, salt.byteOffset + salt.byteLength) as ArrayBuffer,
       iterations,
       hash: 'SHA-256',
     },
@@ -81,9 +81,9 @@ export async function decryptEncryptedArchive(
   const key = await deriveAesKey(password, header.salt, header.iterations);
   try {
     return await crypto.subtle.decrypt(
-      {name: 'AES-GCM', iv: header.iv},
+      {name: 'AES-GCM', iv: new Uint8Array(header.iv)},
       key,
-      header.ciphertext,
+      new Uint8Array(header.ciphertext),
     );
   } catch (e) {
     throw new Error('Wrong password or corrupted encrypted archive.');
