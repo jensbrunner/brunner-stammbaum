@@ -22,7 +22,6 @@ export function EncryptedUnlockPage(props: Props) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState('');
   const [error, setError] = useState('');
 
   async function unlock(event: FormEvent) {
@@ -34,16 +33,13 @@ export function EncryptedUnlockPage(props: Props) {
     setLoading(true);
     setError('');
     try {
-      setStatus('Downloading encrypted archive...');
       const encryptedArchive = await fetchEncryptedArchive(props.archiveUrl);
 
-      setStatus('Decrypting archive...');
       const decryptedArchive = await decryptEncryptedArchive(
         encryptedArchive,
         password,
       );
 
-      setStatus('Preparing family tree...');
       const {gedcom, images} = await loadFile(new Blob([decryptedArchive]));
       const hash = `encrypted-${Date.now()}-${Math.random()
         .toString(36)
@@ -65,7 +61,6 @@ export function EncryptedUnlockPage(props: Props) {
     }
 
     setLoading(false);
-    setStatus('');
   }
 
   return (
@@ -108,7 +103,6 @@ export function EncryptedUnlockPage(props: Props) {
             </div>
           </Form.Field>
           <Message error header="Unable to unlock archive" content={error} />
-          {status && <Message info content={status} />}
           <Button
             className="unlockSubmit"
             fluid
