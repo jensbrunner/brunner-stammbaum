@@ -1,0 +1,119 @@
+import {analyticsEvent} from '../util/analytics';
+import {getSoftware, TopolaData} from '../util/gedcom_util';
+import {DataSource, DataSourceEnum, SourceSelection} from './data_source';
+import {storeGedcom} from './gedcom_store';
+import {loadGedcom} from './load_data';
+
+/**
+ * Message types used in embedded mode.
+ * When the parent is ready to receive messages, it sends PARENT_READY.
+ * When the child (this app) is ready to receive messages, it sends READY.
+ * When the child receives PARENT_READY, it sends READY.
+ * When the parent receives READY, it sends data in a GEDCOM message.
+ */
+enum EmbeddedMessageType {
+  GEDCOM = 'gedcom',
+  READY = 'ready',
+  PARENT_READY = 'parent_ready',
+}
+
+/** Message sent to parent or received from parent in embedded mode. */
+interface EmbeddedMessage {
+  message: EmbeddedMessageType;
+}
+
+interface GedcomMessage extends EmbeddedMessage {
+  message: EmbeddedMessageType.GEDCOM;
+  gedcom?: string;
+}
+
+export interface EmbeddedSourceSpec {
+  source: DataSourceEnum.EMBEDDED;
+}
+
+/** GEDCOM file received from outside of the iframe. */
+export class EmbeddedDataSource implements DataSource<EmbeddedSourceSpec> {
+  private activeListener?: (event: MessageEvent) => void;
+
+  isNewData(
+    _newSource: SourceSelection<EmbeddedSourceSpec>,
+    _oldSource: SourceSelection<EmbeddedSourceSpec>,
+    _data?: TopolaData,
+  ): boolean {
+    // Never reload data.
+    return false;
+  }
+
+  private async onMessage(
+    message: EmbeddedMessage,
+    resolve: (value: TopolaData) => void,
+    reject: (reason: unknown) => void,
+    onProgress?: (status: string) => void,
+  ) {
+    if (message.message === EmbeddedMessageType.PARENT_READY) {
+      // Parent didn't receive the first 'ready' message, so we need to send it again.
+      window.parent.postMessage({message: EmbeddedMessageType.READY}, '*');
+    } else if (message.message === EmbeddedMessageType.GEDCOM) {
+      const gedcom = (message as GedcomMessage).gedcom;
+      if (!gedcom) {
+        return;
+      }
+      try {
+        const embeddedHash = 'embedded';
+        storeGedcom(embeddedHash, gedcom, new Map());
+        // Embedded data is volatile: the parent re-posts a fresh GEDCOM on every
+        // load (and a page reload re-runs the ready/parent_ready handshake, so
+        // the parent re-sends). That GEDCOM may inline object URLs (blob:/data:)
+        // that die with the previous document. Persisting it to sessionStorage
+        // under the constant 'embedded' key would return dead URLs on the next
+        // load, so opt out of the session cache for embedded data.
+        const data = await loadGedcom(embeddedHash, onProgress, {
+          useSessionCache: false,
+        });
+        const software = getSoftware(data.gedcom.head);
+        analyticsEvent('embedded_file_loaded', {
+          event_label: software,
+        });
+        resolve(data);
+      } catch (error) {
+        analyticsEvent('embedded_file_error');
+        reject(error);
+      }
+    }
+  }
+
+  async loadData(
+    _source: SourceSelection<EmbeddedSourceSpec>,
+    onProgress?: (status: string) => void,
+  ): Promise<TopolaData> {
+    if (this.activeListener) {
+      window.removeEventListener('message', this.activeListener);
+      this.activeListener = undefined;
+    }
+
+    // Notify the parent window that we are ready.
+    return new Promise<TopolaData>((resolve, reject) => {
+      // Remove the listener once the GEDCOM arrives (resolve) or an error
+      // occurs (reject) to prevent it from accumulating across loadData calls.
+      const wrappedResolve = (value: TopolaData) => {
+        if (this.activeListener === listener) {
+          window.removeEventListener('message', listener);
+          this.activeListener = undefined;
+        }
+        resolve(value);
+      };
+      const wrappedReject = (reason: unknown) => {
+        if (this.activeListener === listener) {
+          window.removeEventListener('message', listener);
+          this.activeListener = undefined;
+        }
+        reject(reason);
+      };
+      const listener = (event: MessageEvent) =>
+        this.onMessage(event.data, wrappedResolve, wrappedReject, onProgress);
+      this.activeListener = listener;
+      window.parent.postMessage({message: EmbeddedMessageType.READY}, '*');
+      window.addEventListener('message', listener);
+    });
+  }
+}

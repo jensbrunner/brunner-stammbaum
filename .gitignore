@@ -1,0 +1,7 @@
+topola-viewer/node_modules/
+topola-viewer/dist/
+backup/
+media/
+brunner.ged
+*.zip
+*.zip.zip

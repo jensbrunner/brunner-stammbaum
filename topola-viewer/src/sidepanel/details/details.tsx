@@ -1,0 +1,419 @@
+import flatMap from 'array.prototype.flatmap';
+import {GedcomEntry} from 'parse-gedcom';
+import {FormattedMessage} from 'react-intl';
+import {Header, Item} from 'semantic-ui-react';
+import {
+  dereference,
+  GedcomData,
+  getData,
+  getFileName,
+  getImageFileEntry,
+  getNonImageFileEntry,
+  mapToSource,
+  resolveFileUrl,
+} from '../../util/gedcom_util';
+import {Config, Ids} from '../config/config';
+import {AdditionalFiles, FileEntry} from './additional-files';
+import {ALL_SUPPORTED_EVENT_TYPES, Events} from './events';
+import {ImmediateFamily} from './immediate-family';
+import {MultilineText} from './multiline-text';
+import {Sources} from './sources';
+import {TranslatedTag} from './translated-tag';
+import {WrappedImage} from './wrapped-image';
+
+const EXCLUDED_TAGS = [
+  ...ALL_SUPPORTED_EVENT_TYPES,
+  'NAME',
+  'SEX',
+  'FAMC',
+  'FAMS',
+  'NOTE',
+  'SOUR',
+  'FACT',
+];
+
+function dataDetails(entry: GedcomEntry) {
+  const lines = [];
+  if (entry.data) {
+    lines.push(...getData(entry));
+  }
+  entry.tree
+    .filter((subentry) => subentry.tag === 'NOTE')
+    .forEach((note) =>
+      getData(note).forEach((line) => lines.push(<i>{line}</i>)),
+    );
+  if (!lines.length) {
+    return null;
+  }
+  return (
+    <>
+      <Header sub>
+        <TranslatedTag tag={entry.tag} />
+      </Header>
+      <span>
+        <MultilineText lines={lines} />
+      </span>
+    </>
+  );
+}
+
+function attributeDetails(entry: GedcomEntry) {
+  if (!entry.data) {
+    return null;
+  }
+
+  const attributeName = entry.tree
+    .filter((subentry) => subentry.tag === 'TYPE')
+    .flatMap((type) => getData(type))
+    .join()
+    .trim();
+
+  const attributeValue = getData(entry).join(' ').trim();
+  if (attributeName) {
+    return (
+      <>
+        <Header sub>
+          <TranslatedTag tag={entry.tag} />
+        </Header>
+        <div>
+          <b>{attributeName}</b>: {attributeValue}
+        </div>
+      </>
+    );
+  } else {
+    return (
+      <>
+        <Header sub>
+          <TranslatedTag tag={entry.tag} />
+        </Header>
+        <div>{attributeValue}</div>
+      </>
+    );
+  }
+}
+
+function imageDetails(
+  objectEntryReference: GedcomEntry,
+  gedcom: GedcomData,
+  images?: Map<string, string>,
+  mediaBaseUrl?: string,
+) {
+  const imageEntry = dereference(
+    objectEntryReference,
+    gedcom,
+    (gedcom) => gedcom.other,
+  );
+
+  const imageFileEntry = getImageFileEntry(imageEntry);
+
+  if (!imageFileEntry || !hasData(imageEntry)) {
+    return null;
+  }
+
+  return (
+    <div className="person-image">
+      <WrappedImage
+        url={resolveFileUrl(imageFileEntry.data, images, mediaBaseUrl)}
+        filename={getFileName(imageFileEntry) || ''}
+      />
+    </div>
+  );
+}
+
+function sourceDetails(
+  sourceReferenceEntries: GedcomEntry[],
+  gedcom: GedcomData,
+) {
+  const sources = sourceReferenceEntries.map((sourceEntryReference) =>
+    mapToSource(sourceEntryReference, gedcom),
+  );
+
+  if (!sources.length) {
+    return null;
+  }
+
+  return (
+    <>
+      <div className="item-header">
+        <Header as="span" size="small">
+          <TranslatedTag tag="SOUR" />
+        </Header>
+      </div>
+      <Sources sources={sources} />
+    </>
+  );
+}
+
+function fileDetails(
+  objectEntries: GedcomEntry[],
+  gedcom: GedcomData,
+  images?: Map<string, string>,
+  mediaBaseUrl?: string,
+) {
+  const files: FileEntry[] = [];
+  objectEntries
+    .map((objectEntry) =>
+      dereference(objectEntry, gedcom, (gedcom) => gedcom.other),
+    )
+    .forEach((objectEntry) => {
+      const fileEntry = getNonImageFileEntry(objectEntry);
+      if (fileEntry) {
+        files.push({
+          url: resolveFileUrl(fileEntry.data, images, mediaBaseUrl),
+          filename: getFileName(fileEntry),
+          titl: objectEntry.tree.find((entry) => entry.tag === 'TITL')?.data,
+        });
+      }
+    });
+
+  if (!files.length) {
+    return null;
+  }
+
+  return (
+    <>
+      <div className="item-header">
+        <Header as="span" size="small">
+          <TranslatedTag tag="OBJE" />
+        </Header>
+      </div>
+      <AdditionalFiles files={files} />
+    </>
+  );
+}
+
+function noteDetails(noteEntryReference: GedcomEntry, gedcom: GedcomData) {
+  const noteEntry = dereference(
+    noteEntryReference,
+    gedcom,
+    (gedcom) => gedcom.other,
+  );
+
+  if (!noteEntry || !hasData(noteEntry)) {
+    return null;
+  }
+
+  return (
+    <MultilineText
+      lines={getData(noteEntry).map((line, index) => (
+        <i key={index}>{line}</i>
+      ))}
+    />
+  );
+}
+
+function nameDetails(entry: GedcomEntry) {
+  const prefix = entry.tree.find((entry) => entry.tag === 'NPFX')?.data;
+  let given = entry.tree.find((entry) => entry.tag === 'GIVN')?.data;
+  let rufname = entry.tree.find((entry) => entry.tag === '_RUFNAME')?.data;
+  const nickname = entry.tree.find((entry) => entry.tag === 'NICK')?.data;
+  const surnamePrefix = entry.tree.find((entry) => entry.tag === 'SPFX')?.data;
+  const surname = entry.tree.find((entry) => entry.tag === 'SURN')?.data;
+  const suffix = entry.tree.find((entry) => entry.tag === 'NSFX')?.data;
+
+  // If _RUFNAME is included in GIVN, then replace this part in GIVN with this part in quotation marks,
+  // so that this name is not shown twice.
+  if (given && rufname && given.includes(rufname)) {
+    given = given.replace(rufname, `"${rufname}"`);
+    rufname = undefined;
+  }
+
+  const fullNameParts = [
+    prefix,
+    given,
+    rufname && `"${rufname}"`,
+    nickname && `(${nickname})`,
+    surnamePrefix,
+    surname,
+    suffix,
+  ].filter(Boolean);
+
+  const fullName =
+    fullNameParts.join(' ').trim() || entry.data.replaceAll('/', '') || '';
+
+  const nameType = entry.tree.find(
+    (entry) => entry.tag === 'TYPE' && entry.data !== 'Unknown',
+  )?.data;
+
+  return (
+    <>
+      <Header as="span" size="large">
+        {fullName ? (
+          fullName
+        ) : (
+          <FormattedMessage id="name.unknown_name" defaultMessage="N.N." />
+        )}
+      </Header>
+      {fullName && nameType && (
+        <Item.Meta>
+          <TranslatedTag tag={nameType} />
+        </Item.Meta>
+      )}
+    </>
+  );
+}
+
+function getSectionForEachMatchingEntry(
+  entries: GedcomEntry[],
+  gedcom: GedcomData,
+  tags: string[],
+  detailsFunction: (
+    entry: GedcomEntry,
+    gedcom: GedcomData,
+    images?: Map<string, string>,
+    mediaBaseUrl?: string,
+  ) => React.ReactNode | null,
+  images?: Map<string, string>,
+  mediaBaseUrl?: string,
+): React.ReactNode[] {
+  return flatMap(tags, (tag) =>
+    entries
+      .filter((entry) => entry.tag === tag)
+      .map((entry) => detailsFunction(entry, gedcom, images, mediaBaseUrl)),
+  )
+    .filter((element) => element !== null)
+    .map((element, index) => (
+      <Item key={index}>
+        <Item.Content>{element}</Item.Content>
+      </Item>
+    ));
+}
+
+function combineAllMatchingEntriesIntoSingleSection(
+  entries: GedcomEntry[],
+  gedcom: GedcomData,
+  tags: string[],
+  detailsFunction: (
+    entries: GedcomEntry[],
+    gedcom: GedcomData,
+    images?: Map<string, string>,
+    mediaBaseUrl?: string,
+  ) => React.ReactNode | null,
+  images?: Map<string, string>,
+  mediaBaseUrl?: string,
+): React.ReactNode {
+  const entriesWithMatchingTag = flatMap(tags, (tag) =>
+    entries.filter((entry) => entry.tag === tag),
+  ).filter((element) => element !== null);
+
+  const sectionWithDetails = entriesWithMatchingTag.length
+    ? detailsFunction(entriesWithMatchingTag, gedcom, images, mediaBaseUrl)
+    : null;
+
+  if (!sectionWithDetails) {
+    return null;
+  }
+
+  return (
+    <Item>
+      <Item.Content>{sectionWithDetails}</Item.Content>
+    </Item>
+  );
+}
+
+/**
+ * Returns true if there is displayable information in this entry.
+ * Returns false if there is no data in this entry or this is only a reference
+ * to another entry.
+ */
+function hasData(entry: GedcomEntry) {
+  return entry.tree.length > 0 || (entry.data && !entry.data.startsWith('@'));
+}
+
+function getOtherSections(entries: GedcomEntry[], gedcom: GedcomData) {
+  return entries
+    .filter((entry) => !EXCLUDED_TAGS.includes(entry.tag))
+    .map((entry) => dereference(entry, gedcom, (gedcom) => gedcom.other))
+    .filter(hasData)
+    .map((entry) => dataDetails(entry))
+    .filter((element) => element !== null)
+    .map((element, index) => (
+      <Item key={index}>
+        <Item.Content>{element}</Item.Content>
+      </Item>
+    ));
+}
+
+function getSectionForId(indi: string): React.ReactNode {
+  return (
+    <Item>
+      <Item.Content>
+        <Header sub>
+          <FormattedMessage id="config.ids" defaultMessage="Identification" />
+        </Header>
+        <div>
+          <i>{indi}</i>
+        </div>
+      </Item.Content>
+    </Item>
+  );
+}
+
+interface Props {
+  gedcom: GedcomData;
+  indi: string;
+  config: Config;
+  images?: Map<string, string>;
+  mediaBaseUrl?: string;
+}
+
+export function Details(props: Props) {
+  const entries = props.gedcom.indis[props.indi].tree;
+
+  return (
+    <div className="details">
+      <Item.Group divided>
+        {getSectionForEachMatchingEntry(
+          entries,
+          props.gedcom,
+          ['NAME'],
+          nameDetails,
+        )}
+        {getSectionForEachMatchingEntry(
+          entries,
+          props.gedcom,
+          ['OBJE'],
+          imageDetails,
+          props.images,
+          props.mediaBaseUrl,
+        )}
+        <ImmediateFamily gedcom={props.gedcom} indi={props.indi} />
+        <Events
+          gedcom={props.gedcom}
+          entries={entries}
+          indi={props.indi}
+          images={props.images}
+          mediaBaseUrl={props.mediaBaseUrl}
+        />
+        {props.config.id === Ids.SHOW ? getSectionForId(props.indi) : null}
+        {getSectionForEachMatchingEntry(
+          entries,
+          props.gedcom,
+          ['FACT'],
+          attributeDetails,
+        )}
+        {getOtherSections(entries, props.gedcom)}
+        {getSectionForEachMatchingEntry(
+          entries,
+          props.gedcom,
+          ['NOTE'],
+          noteDetails,
+        )}
+        {combineAllMatchingEntriesIntoSingleSection(
+          entries,
+          props.gedcom,
+          ['OBJE'],
+          fileDetails,
+          props.images,
+          props.mediaBaseUrl,
+        )}
+        {combineAllMatchingEntriesIntoSingleSection(
+          entries,
+          props.gedcom,
+          ['SOUR'],
+          sourceDetails,
+        )}
+      </Item.Group>
+    </div>
+  );
+}

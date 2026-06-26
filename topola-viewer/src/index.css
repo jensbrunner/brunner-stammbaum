@@ -1,0 +1,448 @@
+body, html {
+  height: 100%;
+}
+
+.node {
+  cursor: pointer;
+}
+
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+#content {
+  flex: 1 1 auto;
+  height: 100%;
+  overflow: hidden;
+}
+
+#introContent {
+  flex: 1 1 auto;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+}
+
+#unlockContent {
+  flex: 1 1 auto;
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f6f7;
+  padding: 24px;
+}
+
+#unlockPanel {
+  width: 100%;
+  max-width: 380px;
+}
+
+#svgContainer {
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+.hidden {
+  display: none;
+}
+
+p.comment {
+  margin-top: 16px;
+}
+
+div.ui.error.message {
+  margin: auto;
+}
+
+div.ui.errorPopup.message {
+  left: 40px;
+  bottom: 40px;
+  position: fixed;
+}
+
+div.ui.card.intro {
+  width: 770px;
+  margin: auto;
+}
+
+.version {
+  color: #888;
+}
+
+.backgroundImage {
+  width: 100%;
+  height: 100%;
+  background-image: url(topola.jpg);
+  background-size: cover;
+  background-position: 0% 20%;
+  position: fixed;
+  z-index: -100;
+  filter: blur(8px) opacity(30%);
+  -webkit-filter: blur(8px) opacity(30%);
+}
+
+div.zoom {
+  box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+  border-radius: 4px;
+  position: fixed;
+  margin: 10px;
+  z-index: 10;
+}
+
+.zoom button {
+  font-family: monospace;
+  font-weight: bold;
+  font-size: 20px;
+  text-decoration: none;
+  color: black;
+  text-align: center;
+  width: 26px;
+  height: 26px;
+  background-color: #fff;
+  display: block;
+  line-height: 26px;
+  box-sizing: content-box;
+  cursor: pointer;
+  padding: 0px;
+}
+
+.zoom button:hover {
+  background-color: #eee;
+}
+
+.zoom button:focus {
+  outline: 0px;
+}
+
+.zoom-in {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  border-top: 0px;
+  border-bottom: 1px solid #ccc;
+  border-left: 0px;
+  border-right: 0px;
+}
+
+.zoom-out {
+  border: 0px;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.ui.loader.loading-more {
+  position: absolute;
+  top: auto;
+  bottom: 0px;
+  left: 25px;
+}
+
+.content .ui.image.blockImage {
+  display: block;
+}
+
+.link-span {
+  color: #4183c4;
+  cursor: pointer;
+}
+
+.ui.menu .item>img:not(.ui).menu-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 5px
+}
+
+.ui.top.attached.menu {
+  margin-top: 0px;
+}
+
+.details {
+  padding: 15px 0px;
+  border-bottom: 1px solid rgba(34,36,38,.15);
+  overflow-y: auto;
+  height: calc(100% - 43px);
+}
+
+.details .ui.items .item .content {
+  padding: 0 15px 0 25px;
+}
+
+.details .ui.list .item > .list-icon-wrapper {
+  display: table-cell;
+  width: 20px;
+  text-align: center;
+  vertical-align: top;
+  padding-right: 4px;
+}
+
+.details .ui.list .item > .list-icon-wrapper > i.icon {
+  margin: 0;
+}
+
+
+.details .ui.list .item > .list-icon-wrapper + .content {
+  display: table-cell;
+  vertical-align: top;
+  padding-left: 8px;
+}
+
+
+
+
+.details .item-header {
+  justify-content: space-between;
+  display: flex;
+  word-break: break-word;
+}
+
+.details .item-header .header {
+  text-transform: uppercase;
+  margin: 0 0 8px 0;
+  min-width: 40%;
+}
+
+.details .person-image {
+  padding: 0 10px;
+}
+
+.ui.form .field.no-margin {
+  margin: 0;
+}
+
+.ui.tabular.menu a {
+  text-transform: uppercase;
+}
+
+.limit-height {
+  height: 300px;
+  overflow-y: scroll;
+}
+
+.loaded-image-thumbnail {
+  cursor: zoom-in;
+}
+
+.hidden-image {
+ display: none !important;
+}
+
+.modal-image {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.modal-image .ui.attached.label {
+  width: auto;
+  min-width: 100%;
+}
+
+.image-placeholder {
+  height: 100%;
+}
+
+.event-extras .ui.attached.menu {
+  border: none;
+  min-height: auto;
+}
+
+.event-extras .ui.attached.segment.tab {
+  border: none;
+}
+
+.event-extras .ui.tabular.menu .item {
+  border: none;
+}
+
+.event-extras .ui.menu .active.item .icon{
+  background-color: #1b1c1d;
+  color: #ffffff;
+}
+
+.event-extras .ui.attached.segment.active.tab{
+  word-break: normal;
+  overflow-wrap: anywhere;
+  max-width: 289px;
+  padding: 14px 0px 0px;
+}
+
+#dotatsoSvgContainer {
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+#dotatsoSvgContainer svg.main_svg {
+  width: 100%;
+  height: 100%;
+}
+
+#dotatsoSvgContainer rect.card-female, #dotatsoSvgContainer .card-female .card-body-rect, #dotatsoSvgContainer .card-female .text-overflow-mask {
+  fill: rgb(196, 138, 146);
+}
+
+#dotatsoSvgContainer rect.card-male, #dotatsoSvgContainer .card-male .card-body-rect, #dotatsoSvgContainer .card-male .text-overflow-mask {
+  fill: rgb(120, 159, 172);
+}
+
+#dotatsoSvgContainer .card-genderless .card-body-rect, #dotatsoSvgContainer .card-genderless .text-overflow-mask {
+  fill: lightgray;
+}
+
+#dotatsoSvgContainer g.card_add text {
+  fill: #fff;
+}
+
+#dotatsoSvgContainer .card-main-outline {
+  stroke: black;
+  stroke-width: 3px;
+}
+
+#dotatsoSvgContainer .card_family_tree rect {
+  transition: 0.3s;
+}
+
+#dotatsoSvgContainer .card_family_tree:hover rect {
+  transform: scale(1.1);
+}
+
+#dotatsoSvgContainer .card_family_tree line {
+  stroke: black;
+}
+
+#dotatsoSvgContainer .link {
+  stroke: black;
+}
+
+#content .pusher {
+  height: 100%;
+  display: flex;
+  overflow: hidden;
+}
+
+#content #sidebar.wide ~ .pusher {
+  width: calc(100% - 350px);
+  transform: none;
+}
+
+#content #sidebar.very.thin ~ .pusher {
+  width: calc(100% - 60px);
+}
+
+#sidebar {
+  overflow: hidden;
+  height: 100%;
+}
+
+#sideTabs {
+  height: 100%;
+}
+
+#sideTabs > .ui.tabular.menu{
+  padding-left: 60px;
+}
+
+#sideToggle {
+  position: absolute;
+  background: inherit;
+  top: 0;
+  height: 42px;
+  border-radius: 0;
+  width: 60px;
+}
+
+#sideToggle:hover {
+  background-color: #ddd;
+}
+
+.collapsed-details {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+}
+
+.collapsed-details .vertical-name {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  transform-origin: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+  white-space: pre;
+}
+
+.parents-block {
+  margin-bottom: 7px;
+}
+
+.children-block {
+  display: flex;
+}
+
+@media (max-width: 450px) {
+  /* Hide the title from the top bar when the viewport is too small to display
+     it alongside the search box. */
+  .topbar--title {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  #sidebar {
+    background-color: #fff;
+  }
+
+  #sidebar.wide {
+    width: 100%;
+    top: 50%;
+    max-height: 50%;
+  }
+
+  /* Position the thin sidebar at the bottom. */
+  #sidebar.very.thin {
+    right: unset !important;
+    left: unset !important;
+    bottom: 0;
+    width: 100%;
+    height: 42px !important;
+    top: auto;
+  }
+
+  /* Display the name horizontally. */
+  .collapsed-details .vertical-name {
+    writing-mode: unset;
+    transform: none;
+  }
+
+  /* Substitute the right arrow with a down arrow. */
+  #sidebar.wide i.icon.arrow.right:before {
+    content: "\f063";
+  }
+
+  /* Substitute the left arrow with an up arrow. */
+  #sidebar.very.thin i.icon.arrow.left:before {
+    content: "\f062";
+  }
+
+  #content #sidebar.wide ~ .pusher {
+    width: 100%;
+    height: 50%;
+    min-height: unset;
+  }
+
+  #content #sidebar.very.thin ~ .pusher {
+    width: 100%;
+  }
+
+  /* Push the search box to the right on small screens. */
+  .ui.search {
+    margin-left: auto;
+    margin-right: 1em;
+  }
+
+  .ui.search>.results {
+    left: initial;
+    right: 0;
+  }
+}
