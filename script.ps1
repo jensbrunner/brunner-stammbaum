@@ -1,6 +1,9 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+$env:VITE_ENCRYPTED_ARCHIVE_URL = 'https://raw.githubusercontent.com/jensbrunner/brunner-stammbaum/main/brunner.zip.enc'
+$env:VITE_GOOGLE_ANALYTICS = 'false'
+
 Add-Type -AssemblyName System.Windows.Forms
 $buildAnswer = [System.Windows.Forms.MessageBox]::Show(
   'Also rebuild the npm project?',
@@ -28,7 +31,7 @@ if (-not (Test-Path $sevenZip)) { throw '7-Zip not found at C:\Program Files\7-Z
 
 Remove-Item $zipPath, $encPath -ErrorAction SilentlyContinue
 
-& $sevenZip a -tzip $zipPath $gedPath (Join-Path $mediaPath '*')
+& $sevenZip a -tzip $zipPath $gedPath $mediaPath
 
 npm.cmd run encrypt-tree -- $zipPath $encPath
 
