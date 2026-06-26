@@ -1,6 +1,6 @@
 import {FormEvent, useState} from 'react';
 import {useNavigate} from 'react-router';
-import {Button, Form, Header, Icon, Message, Segment} from 'semantic-ui-react';
+import {Button, Form, Icon, Message, Segment} from 'semantic-ui-react';
 import {loadFile} from '../datasource/load_data';
 import {storeGedcom} from '../datasource/gedcom_store';
 import {decryptEncryptedArchive} from '../util/encrypted_archive';
@@ -20,6 +20,7 @@ async function fetchEncryptedArchive(url: string): Promise<ArrayBuffer> {
 export function EncryptedUnlockPage(props: Props) {
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
@@ -48,44 +49,78 @@ export function EncryptedUnlockPage(props: Props) {
         .toString(36)
         .slice(2)}`;
       storeGedcom(hash, gedcom, images);
-      navigate({pathname: '/view', search: `?file=${encodeURIComponent(hash)}`});
+
+      setPassword('');
+      setShowPassword(false);
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+      navigate(
+        {pathname: '/view', search: `?file=${encodeURIComponent(hash)}`},
+        {replace: true},
+      );
+      return;
     } catch (e) {
       setError((e as Error).message || String(e));
-    } finally {
-      setLoading(false);
-      setStatus('');
     }
+
+    setLoading(false);
+    setStatus('');
   }
 
   return (
-    <div id="unlockContent">
+    <main id="unlockContent" className={loading ? 'isUnlocking' : undefined}>
       <Segment id="unlockPanel">
-        <Header as="h2">
-          <Icon name="lock" />
-          <Header.Content>Family Tree</Header.Content>
-        </Header>
+        <div className="unlockCoatOfArms">
+          <img src="/coa.png" alt="Brunner Wappen" />
+        </div>
+
+        <h1>Brunner Stammbaum</h1>
+
         <Form onSubmit={unlock} error={!!error}>
-          <Form.Input
-            autoFocus
-            disabled={loading}
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(_, data) => setPassword(String(data.value || ''))}
-          />
+          <Form.Field className="unlockPasswordField">
+            <label htmlFor="tree-unlock-passphrase">Passwort</label>
+            <div className="unlockPasswordRow">
+              <input
+                id="tree-unlock-passphrase"
+                name="tree-unlock-passphrase"
+                autoComplete="off"
+                autoFocus
+                data-1p-ignore="true"
+                data-bwignore="true"
+                data-lpignore="true"
+                disabled={loading}
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+              <button
+                aria-label={showPassword ? 'Passwort ausblenden' : 'Passwort anzeigen'}
+                aria-pressed={showPassword}
+                className="passwordToggle"
+                disabled={loading}
+                onClick={() => setShowPassword((shown) => !shown)}
+                title={showPassword ? 'Passwort ausblenden' : 'Passwort anzeigen'}
+                type="button"
+              >
+                <Icon name={showPassword ? 'eye slash' : 'eye'} />
+              </button>
+            </div>
+          </Form.Field>
           <Message error header="Unable to unlock archive" content={error} />
           {status && <Message info content={status} />}
           <Button
-            primary
+            className="unlockSubmit"
             fluid
             type="submit"
             loading={loading}
             disabled={!password || loading}
           >
-            Unlock
+            <span>Öffnen</span>
+            <Icon name="arrow right" />
           </Button>
         </Form>
       </Segment>
-    </div>
+    </main>
   );
 }
