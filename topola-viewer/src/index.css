@@ -584,7 +584,7 @@ div.zoom {
 }
 
 #content #sidebar.wide ~ .pusher {
-  width: calc(100% - 350px);
+  width: calc(100% - var(--sidebar-width, 350px));
   transform: none;
 }
 
@@ -595,8 +595,43 @@ div.zoom {
 #sidebar {
   overflow: hidden;
   height: 100%;
+  width: var(--sidebar-width, 350px);
 }
 
+#sidebar.very.thin {
+  width: 60px;
+}
+
+#sidebar.wide {
+  width: var(--sidebar-width, 350px);
+}
+
+.sidebar-resize-handle {
+  position: absolute;
+  top: 42px;
+  left: 0;
+  bottom: 0;
+  width: 10px;
+  cursor: ew-resize;
+  touch-action: none;
+  z-index: 3;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.12), transparent 70%);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.sidebar-resize-handle:hover {
+  opacity: 1;
+}
+
+body.is-resizing-sidebar {
+  cursor: ew-resize;
+  user-select: none;
+}
+
+body.is-resizing-sidebar * {
+  cursor: ew-resize !important;
+}
 #sideTabs {
   height: 100%;
 }
@@ -656,7 +691,7 @@ div.zoom {
   }
 
   #sidebar.wide {
-    width: 100%;
+    width: 100% !important;
     top: 50%;
     max-height: 50%;
   }
@@ -666,7 +701,7 @@ div.zoom {
     right: unset !important;
     left: unset !important;
     bottom: 0;
-    width: 100%;
+    width: 100% !important;
     height: 42px !important;
     top: auto;
   }
@@ -677,7 +712,10 @@ div.zoom {
     transform: none;
   }
 
-  /* Substitute the right arrow with a down arrow. */
+  .sidebar-resize-handle {
+    display: none;
+  }
+/* Substitute the right arrow with a down arrow. */
   #sidebar.wide i.icon.arrow.right:before {
     content: "\f063";
   }
@@ -726,3 +764,7 @@ div.zoom {
 .ui.menu.inverted.red .menu .item:hover {
   background: rgba(255, 244, 227, 0.12);
 }
+
+
+
+
